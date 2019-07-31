@@ -1,0 +1,39 @@
+.App {
+  font-family: sans-serif;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 275px);
+  justify-content: center;
+}
+
+.meme {
+  margin: 10px;
+  background-color: #33312fde;
+  color: whitesmoke;
+  width: 350px;
+  height: 400px;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  box-shadow: 5px 5px 5px #999;
+  font-size: 18px;
+
+  .meme-img {
+    max-width: 325px;
+    min-width: 250px;
+    max-height: 325px;
+    min-height: 200px;
+  }
+
+  img {
+    height: auto;
+    width: 30px;
+    transition: 0.5s ease-in-out;
+
+    &:hover {
+      box-shadow: 5px 5px 5px #999;
+    }
+  }
+}
