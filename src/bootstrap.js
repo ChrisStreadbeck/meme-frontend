@@ -1,24 +1,27 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { Provider } from "react-redux";
-import { createStore, applyMiddleware } from "redux";
-import { BrowserRouter } from "react-router-dom";
-import App from "./components/app";
-import reducers from "./reducers";
+import { useRoutes, A } from "hookrouter";
 
-const createStoreWithMiddleware = applyMiddleware()(createStore);
+import App from "./components/app";
+import MemeForm from "./components/memeForm";
 
 import "./style/main.scss";
 
-function main() {
-  ReactDOM.render(
-    <Provider store={createStoreWithMiddleware(reducers)}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </Provider>,
-    document.querySelector(".app-wrapper")
+const routes = {
+  "/": () => <App />,
+  "/form": () => <MemeForm />
+};
+
+function Main() {
+  return (
+    <div>
+      <div className="navbar">
+        <A href="/">Home</A>
+        <A href="/form">Form</A>
+      </div>
+      {useRoutes(routes)}
+    </div>
   );
 }
 
-document.addEventListener("DOMContentLoaded", main);
+ReactDOM.render(<Main />, document.querySelector(".app-wrapper"));
