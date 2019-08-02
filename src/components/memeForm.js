@@ -1,11 +1,15 @@
 import React from "react";
 import DropzoneComponent from "react-dropzone-component";
+import request from "superagent";
+import { navigate } from "hookrouter";
 
 import "../../node_modules/react-dropzone-component/styles/filepicker.css";
 import "../../node_modules/dropzone/dist/min/dropzone.min.css";
 
 const MemeForm = () => {
   const [input, setInput] = React.useState("");
+  const [favorite, setFavorite] = React.useState(false);
+  const [image, setImage] = React.useState("");
   const imageRef = React.useRef(null);
 
   const componentConfig = () => {
@@ -27,14 +31,14 @@ const MemeForm = () => {
     return {
       addedfile: file => {
         let upload = request
-          .post("https://localhost:5000/add-meme")
-          .field("upload_preset", "cloudy-images")
+          .post("https://api.cloudinary.com/v1_1/cstread/image/upload")
+          .field("upload_preset", "meme-images")
           .field("file", file);
         upload.end((error, response) => {
           if (error) {
-            console.log(error);
+            console.log("Cloudinary error", error);
           }
-          if (response) {
+          if (response.body.secure_url !== "") {
             setImage(response.body.secure_url);
           }
         });
@@ -42,10 +46,33 @@ const MemeForm = () => {
     };
   };
 
+  const handleSubmit = e => {
+    e.preventDefault();
+    fetch("http://localhost:5000/add-meme", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+      body: JSON.stringify({
+        text: input,
+        image: image,
+        favorite: favorite
+      })
+    })
+      .then(result => result.json())
+      .then(setInput(""))
+      .then(setImage(""))
+      .then(setFavorite(false))
+      .then(imageRef.current.dropzone.removeAllFiles())
+      .then(navigate("/"))
+      .catch(error => console.log("form submit", error));
+  };
+
   return (
     <div className="memeform">
       <h1>Add a Meme, plox</h1>
-      <form>
+      <form onSubmit={handleSubmit}>
         <input
           type="text"
           placeholder="Caption"
@@ -53,7 +80,11 @@ const MemeForm = () => {
           onChange={e => setInput(e.target.value)}
         />
         <div>
-          <input type="checkbox" />
+          <input
+            type="checkbox"
+            checked={favorite}
+            onChange={() => setFavorite(!favorite)}
+          />
           <span>Favorite?</span>
         </div>
         <button type="submit">Post Meme</button>
@@ -70,4 +101,5 @@ const MemeForm = () => {
     </div>
   );
 };
+
 export default MemeForm;

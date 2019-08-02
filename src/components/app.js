@@ -13,7 +13,16 @@ const App = () => {
         .catch(error => console.log(error));
     };
     fetchData();
-  }, []);
+    return () => null;
+  }, [memes]);
+
+  const deleteMeme = id => {
+    fetch(`http://localhost:5000/meme/${id}`, {
+      method: "DELETE"
+    })
+      .then(setMemes(memes.filter(meme => meme.id !== id)))
+      .catch(error => console.log("deletion error", error));
+  };
 
   const renderMemes = () => {
     return memes.map(meme => {
@@ -24,6 +33,7 @@ const App = () => {
           text={meme.text}
           image={meme.image}
           favorite={meme.favorite}
+          deleteMeme={deleteMeme}
         />
       );
     });
