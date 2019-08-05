@@ -6,11 +6,22 @@ import { navigate } from "hookrouter";
 import "../../node_modules/react-dropzone-component/styles/filepicker.css";
 import "../../node_modules/dropzone/dist/min/dropzone.min.css";
 
-const MemeForm = () => {
+const MemeForm = props => {
   const [input, setInput] = React.useState("");
   const [favorite, setFavorite] = React.useState(false);
   const [image, setImage] = React.useState("");
   const imageRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (props.id && props.editMode) {
+      fetch(`http://localhost:5000/meme/${props.id}`)
+        .then(response => response.json())
+        .then(data => {
+          setInput(data.text);
+          setFavorite(data.favorite);
+        });
+    }
+  }, []);
 
   const componentConfig = () => {
     return {
@@ -46,27 +57,46 @@ const MemeForm = () => {
     };
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    fetch("http://localhost:5000/add-meme", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json"
-      },
-      body: JSON.stringify({
-        text: input,
-        image: image,
-        favorite: favorite
+    if (props.editMode) {
+      await fetch(`http://localhost:5000/meme/${props.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        body: JSON.stringify({
+          text: input,
+          image: image,
+          favorite: favorite
+        })
       })
-    })
-      .then(result => result.json())
-      .then(setInput(""))
-      .then(setImage(""))
-      .then(setFavorite(false))
-      .then(imageRef.current.dropzone.removeAllFiles())
-      .then(navigate("/"))
-      .catch(error => console.log("form submit", error));
+        .then(imageRef.current.dropzone.removeAllFiles())
+        .catch(error => console.log("put error", error));
+
+      navigate("/");
+    } else {
+      await fetch("http://localhost:5000/add-meme", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        body: JSON.stringify({
+          text: input,
+          image: image,
+          favorite: favorite
+        })
+      })
+        .then(result => result.json())
+        .then(setInput(""))
+        .then(setImage(""))
+        .then(setFavorite(false))
+        .then(imageRef.current.dropzone.removeAllFiles())
+        .then(navigate("/"))
+        .catch(error => console.log("form submit", error));
+    }
   };
 
   return (
